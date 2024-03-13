@@ -4,15 +4,22 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import CrearCliente from "./client/crearCliente";
+import ActualizarClienteModal from "./client/actualizarCliente";
 
 function Clientes() {
   const [clientes, setClientes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const [showCrearModal, setShowCrearModal] = useState(false);
+  const [showActualizarModal, setShowActualizarModal] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState(null);
 
-  const handleClose = () => setShowModal(false);
-  const handleShow = () => {
-    setShowModal(true);
+  const handleCloseCrear = () => setShowCrearModal(false);
+  const handleShowCrear = () => setShowCrearModal(true);
+
+  const handleCloseActualizar = () => setShowActualizarModal(false);
+  const handleShowActualizar = (clientId) => {
+    setSelectedClientId(clientId);
+    setShowActualizarModal(true);
   };
 
   useEffect(() => {
@@ -66,7 +73,6 @@ function Clientes() {
             <div
               className="input-group rounded me-2"
               style={{ maxWidth: "500px" }}
-             
             >
               <input
                 type="search"
@@ -75,15 +81,14 @@ function Clientes() {
                 aria-label="Search"
                 aria-describedby="search-addon"
                 onChange={handleSearch}
-                
               />
             </div>
-            <Button variant="primary" onClick={handleShow}>
+            <Button variant="primary" onClick={handleShowCrear}>
               Crear Cliente
             </Button>
           </div>
 
-          <CrearCliente show={showModal} handleClose={handleClose} />
+          <CrearCliente show={showCrearModal} handleClose={handleCloseCrear} />
 
           {clientes.length !== 0 ? (
             <table className="table table-striped table-bordered rounded">
@@ -110,21 +115,20 @@ function Clientes() {
                     <td>{cliente.Activo ? "Activo" : "Inactivo"}</td>
                     <td>{cliente.FechaCreacion}</td>
                     <td>
-                      <Link
-                        to={`/Clientes/Actualizar/${cliente.idCliente}`}
-                        type="button"
-                        className="btn btn-info btn-sm me-2"
+                      <Button
+                        variant="info"
+                        onClick={() => handleShowActualizar(cliente.idCliente)}
+                        className="me-2"
                       >
                         Modificar
-                      </Link>
+                      </Button>
 
-                      <button
-                        type="button"
+                      <Button
+                        variant="danger"
                         onClick={() => handleDelete(cliente.idCliente)}
-                        className="btn btn-danger btn-sm"
                       >
                         X
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -137,6 +141,11 @@ function Clientes() {
           )}
         </div>
       </div>
+      <ActualizarClienteModal
+        show={showActualizarModal}
+        handleClose={handleCloseActualizar}
+        clientId={selectedClientId}
+      />
     </div>
   );
 }

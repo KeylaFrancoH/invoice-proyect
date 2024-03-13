@@ -1,19 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from 'axios';
-import { Button } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import { Link } from 'react-router-dom';
 import CrearProducto from './product/CrearProducto';
+import ActualizarProduct from './product/ActualizarProduct';
 
 function Producto() {
   const [productos, setProductos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [showModal, setShowModal] = useState(false);
+  const [showCrearModal, setShowCrearModal] = useState(false);
+  const [showActualizarModal, setShowActualizarModal] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
 
-  const handleClose = () => setShowModal(false);
-  const handleShow = () => {
-    setShowModal(true);
+  const handleCloseCrear = () => setShowCrearModal(false);
+  const handleShowCrear = () => setShowCrearModal(true);
+
+  const handleCloseActualizar = () => setShowActualizarModal(false);
+  const handleShowActualizar = (productId) => {
+    setSelectedProductId(productId);
+    setShowActualizarModal(true);
   };
 
   useEffect(() => {
@@ -69,11 +76,12 @@ function Producto() {
                 onChange={handleSearch}
               />
             </div>
-            <Button variant="primary" onClick={handleShow}>
+            <Button variant="primary" onClick={handleShowCrear}>
               Crear Producto
             </Button>
           </div>
-          <CrearProducto show={showModal} handleClose={handleClose} /> {/* Cambiado showModal a show para que coincida con el nombre de la prop */}
+          <CrearProducto show={showCrearModal} handleClose={handleCloseCrear} />
+          <ActualizarProduct show={showActualizarModal} handleClose={handleCloseActualizar} productId={selectedProductId} />
           {productos.length !== 0 ? (
             <table className="table table-striped table-bordered rounded">
               <thead className="table-dark">
@@ -99,16 +107,12 @@ function Producto() {
                     <td>{producto.Activo ? "Activo" : "Inactivo"}</td>
                     <td>{producto.FechaCreacion}</td>
                     <td>
-                      <Link
-                        to={`/Productos/Actualizar/${producto.idProducto}`}
-                        type="button"
-                        className="btn btn-info btn-sm me-2"
-                      >
+                      <Button variant="info" size="sm" className="me-2" onClick={() => handleShowActualizar(producto.idProducto)}>
                         Modificar
-                      </Link>
-                      <button type="button" onClick={() => handleDelete(producto.idProducto)} className="btn btn-danger btn-sm">
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDelete(producto.idProducto)}>
                         X
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}

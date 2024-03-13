@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import axios from 'axios';
+import { Button, Modal } from "react-bootstrap";
 
-function ActualizarProduct() {
-  const { id } = useParams();
+function ActualizarProduct({ show, handleClose, productId }) {
   const [values, setValues] = useState({
     Codigo: "",
     Nombre: "",
@@ -12,13 +11,39 @@ function ActualizarProduct() {
     Stock: "",
     Activo: true,
   });
-
   const [errors, setErrors] = useState({
     Codigo: "",
     Nombre: "",
     Precio: "",
     Stock: "",
   });
+  useEffect(() => {
+    if (productId) {
+      axios.get(`http://localhost:8081/productos/${productId}`)
+        .then((res) => {
+          const producto = res.data;
+          setValues({
+            Codigo: producto.Codigo,
+            Nombre: producto.Nombre,
+            Precio: producto.Precio,
+            Stock: producto.Stock,
+            Activo: producto.Activo,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [productId]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setValues({
+      ...values,
+      [name]: value
+    });
+  };
+ 
 
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -68,21 +93,23 @@ function ActualizarProduct() {
     return Object.values(newErrors).every((error) => error === "");
   };
 
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const isValid = validateInputs();
     if (isValid) {
       const activo = parseInt(values.Stock) > 0;
       setValues({ ...values, Activo: activo });
-      
+
       const confirmCreation = window.confirm(
         "¿Está seguro de que desea continuar con la creación del producto?"
       );
       if (confirmCreation) {
         axios
-          .put("http://localhost:8081/productos/" + id, values)
+          .put(`http://localhost:8081/productos/${productId}`, values)
           .then((res) => {
             console.log(res);
+            handleClose();
             window.location.href = "/Productos";
           })
           .catch((err) => {
@@ -96,114 +123,77 @@ function ActualizarProduct() {
     }
   };
 
-  useEffect(() => {
-    axios
-      .get("http://localhost:8081/productos/" + id)
-      .then((res) => {
-        const producto = res.data;
-        const activo = parseInt(producto.Stock) > 0;
-        setValues({
-          ...values,
-          Codigo: producto.Codigo,
-          Nombre: producto.Nombre,
-          Precio: producto.Precio,
-          Stock: producto.Stock,
-          Activo: activo, 
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
-
   return (
-    <div className="container mt-5">
-      <div className="d-flex justify-content-center py-2 shadow-sm fs-2 fw-bold">
-        ACTUALIZAR PRODUCTOS
-      </div>
-      <div className="container mt-5">
+    <Modal show={show} onHide={handleClose}>
+      <Modal.Header closeButton>
+        <Modal.Title>Actualizar Producto</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
         <form onSubmit={handleSubmit}>
-          {errorMessage && (
-            <div className="alert alert-danger mb-3" role="alert">
-              {errorMessage}
-            </div>
-          )}
           <div className="mb-3">
             <label htmlFor="Codigo">Código del producto:</label>
             <input
               type="text"
-              className={`form-control ${errors.Codigo && "is-invalid"}`}
+              className="form-control"
               id="Codigo"
-              placeholder="Código del producto"
+              name="Codigo"
               value={values.Codigo}
-              onChange={(e) => setValues({ ...values, Codigo: e.target.value })}
+              onChange={handleChange}
             />
-            {errors.Codigo && (
-              <div className="invalid-feedback">{errors.Codigo}</div>
-            )}
           </div>
           <div className="mb-3">
             <label htmlFor="Nombre">Nombre:</label>
             <input
               type="text"
-              className={`form-control ${errors.Nombre && "is-invalid"}`}
+              className="form-control"
               id="Nombre"
-              placeholder="Nombre"
+              name="Nombre"
               value={values.Nombre}
-              onChange={(e) => setValues({ ...values, Nombre: e.target.value })}
+              onChange={handleChange}
             />
-            {errors.Nombre && (
-              <div className="invalid-feedback">{errors.Nombre}</div>
-            )}
           </div>
           <div className="mb-3">
             <label htmlFor="Precio">Precio:</label>
             <input
               type="number"
               step="0.01"
-              className={`form-control ${errors.Precio && "is-invalid"}`}
+              className="form-control"
               id="Precio"
-              placeholder="Precio"
+              name="Precio"
               value={values.Precio}
-              onChange={(e) => setValues({ ...values, Precio: e.target.value })}
+              onChange={handleChange}
             />
-            {errors.Precio && (
-              <div className="invalid-feedback">{errors.Precio}</div>
-            )}
           </div>
           <div className="mb-3">
             <label htmlFor="Stock">Stock:</label>
             <input
               type="number"
-              className={`form-control ${errors.Stock && "is-invalid"}`}
+              className="form-control"
               id="Stock"
-              placeholder="Stock"
+              name="Stock"
               value={values.Stock}
-              onChange={(e) => setValues({ ...values, Stock: e.target.value })}
+              onChange={handleChange}
             />
-            {errors.Stock && (
-              <div className="invalid-feedback">{errors.Stock}</div>
-            )}
           </div>
-
           <div className="mb-3">
             <label htmlFor="Activo">Activo:</label>
             <select
               className="form-control"
               id="Activo"
-              onChange={(e) => setValues({ ...values, Activo: e.target.value })}
+              name="Activo"
+              value={values.Activo ? "1" : "0"}
+              onChange={handleChange}
             >
               <option value="1">Sí</option>
               <option value="0">No</option>
             </select>
           </div>
-          
-          <button type="submit" className="btn btn-primary">
+          <Button variant="primary" type="submit">
             Guardar
-          </button>
+          </Button>
         </form>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
   );
 }
 
