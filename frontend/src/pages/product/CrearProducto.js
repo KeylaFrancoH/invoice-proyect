@@ -4,82 +4,88 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 
 function CrearProducto({ show, handleClose }) {
-  const [values, setValues] = useState({
-    Codigo: "",
-    Nombre: "",
-    Precio: "",
-    Stock: "",
-    Activo: "1",
-  });
+  const [productList, setProductList] = useState([
+    {
+      Codigo: "",
+      Nombre: "",
+      Precio: "",
+      Stock: "",
+      Activo: "1",
+    },
+  ]);
 
-  const [errors, setErrors] = useState({
-    Codigo: "",
-    Nombre: "",
-    Precio: "",
-    Stock: "",
-  });
+  const [errors, setErrors] = useState([
+    {
+      Codigo: "",
+      Nombre: "",
+      Precio: "",
+      Stock: "",
+    },
+  ]);
 
   const [errorMessage, setErrorMessage] = useState("");
 
   const validateInputs = () => {
-    const newErrors = { ...errors };
+    const newErrors = [...errors];
+    let isValid = true;
 
-    // Validar Codigo
-    if (!values.Codigo || values.Codigo.length > 15) {
-      newErrors.Codigo = "El código debe tener máximo 15 caracteres.";
-    } else {
-      newErrors.Codigo = "";
-    }
+    productList.forEach((product, index) => {
+      newErrors[index] = {};
 
-    // Validar Nombre
-    if (!values.Nombre) {
-      newErrors.Nombre = "Debe ingresar un nombre.";
-    } else {
-      newErrors.Nombre = "";
-    }
+      // Validar Codigo
+      if (!product.Codigo || product.Codigo.length > 15) {
+        newErrors[index].Codigo = "El código debe tener máximo 15 caracteres.";
+        isValid = false;
+      }
 
-    // Validar Precio
-    if (
-      !values.Precio ||
-      isNaN(values.Precio) ||
-      parseFloat(values.Precio) <= 0
-    ) {
-      newErrors.Precio = "Debe ingresar un precio válido.";
-    } else {
-      newErrors.Precio = "";
-    }
+      // Validar Nombre
+      if (!product.Nombre) {
+        newErrors[index].Nombre = "Debe ingresar un nombre.";
+        isValid = false;
+      }
 
-    // Validar Stock
-    if (
-      !values.Stock ||
-      isNaN(values.Stock) ||
-      parseInt(values.Stock) <= 0 ||
-      !Number.isInteger(parseFloat(values.Stock))
-    ) {
-      newErrors.Stock = "Debe ingresar un valor entero positivo para el stock.";
-    } else {
-      newErrors.Stock = "";
-    }
+      // Validar Precio
+      if (
+        !product.Precio ||
+        isNaN(product.Precio) ||
+        parseFloat(product.Precio) <= 0
+      ) {
+        newErrors[index].Precio = "Debe ingresar un precio válido.";
+        isValid = false;
+      }
+
+      // Validar Stock
+      if (
+        !product.Stock ||
+        isNaN(product.Stock) ||
+        parseInt(product.Stock) <= 0 ||
+        !Number.isInteger(parseFloat(product.Stock))
+      ) {
+        newErrors[index].Stock =
+          "Debe ingresar un valor entero positivo para el stock.";
+        isValid = false;
+      }
+    });
 
     setErrors(newErrors);
-
-    // Retorna true si no hay errores
-    return Object.values(newErrors).every((error) => error === "");
+    return isValid;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSave = () => {
     const isValid = validateInputs();
     if (isValid) {
       const confirmCreation = window.confirm(
-        "¿Está seguro de que desea continuar con la creación del producto?"
+        "¿Está seguro de que desea continuar con la creación de los productos?"
       );
       if (confirmCreation) {
-        axios
-          .post("http://localhost:8081/productos", values)
-          .then((res) => {
-            console.log(res);
-            handleClose(); // Cierra el modal después de crear el producto
+        Promise.all(
+          productList.map((product) => {
+            return axios.post("http://localhost:8081/productos", product);
+          })
+        )
+          .then((responses) => {
+            console.log(responses);
+            handleClose(); // Cierra el modal después de crear los productos
             window.location.href = "/Productos";
           })
           .catch((err) => {
@@ -93,109 +99,209 @@ function CrearProducto({ show, handleClose }) {
     }
   };
 
+  const handleChange = (index, fieldName, value) => {
+    const newList = [...productList];
+    newList[index][fieldName] = value;
+    setProductList(newList);
+  };
+
+  const addRow = () => {
+    setProductList([
+      ...productList,
+      {
+        Codigo: "",
+        Nombre: "",
+        Precio: "",
+        Stock: "",
+        Activo: "1",
+      },
+    ]);
+    setErrors([
+      ...errors,
+      {
+        Codigo: "",
+        Nombre: "",
+        Precio: "",
+        Stock: "",
+      },
+    ]);
+  };
+
+  const deleteRow = (index) => {
+    const newProductList = [...productList];
+    const newErrors = [...errors];
+
+    newProductList.splice(index, 1);
+    newErrors.splice(index, 1);
+
+    setProductList(newProductList);
+    setErrors(newErrors);
+  };
+
   return (
-    <Modal show={show} onHide={handleClose} size="lg">
+    <Modal show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Crear Producto</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div className="container mt-5">
-          <form onSubmit={handleSubmit}>
+        <div className="container">
+          <form>
             {errorMessage && (
               <div className="alert alert-danger mb-3" role="alert">
                 {errorMessage}
               </div>
             )}
-            <div className="mb-3">
-              <label htmlFor="Codigo">Código del producto:</label>
-              <input
-                type="text"
-                className={`form-control ${errors.Codigo && "is-invalid"}`}
-                id="Codigo"
-                placeholder="Código del producto"
-                value={values.Codigo}
-                onChange={(e) =>
-                  setValues({ ...values, Codigo: e.target.value })
-                }
-              />
-              {errors.Codigo && (
-                <div className="invalid-feedback">{errors.Codigo}</div>
-              )}
-            </div>
-            <div className="mb-3">
-              <label htmlFor="Nombre">Nombre:</label>
-              <input
-                type="text"
-                className={`form-control ${errors.Nombre && "is-invalid"}`}
-                id="Nombre"
-                placeholder="Nombre"
-                value={values.Nombre}
-                onChange={(e) =>
-                  setValues({ ...values, Nombre: e.target.value })
-                }
-              />
-              {errors.Nombre && (
-                <div className="invalid-feedback">{errors.Nombre}</div>
-              )}
-            </div>
-            <div className="mb-3">
-              <label htmlFor="Precio">Precio:</label>
-              <input
-                type="number"
-                step="0.01"
-                className={`form-control ${errors.Precio && "is-invalid"}`}
-                id="Precio"
-                placeholder="Precio"
-                value={values.Precio}
-                onChange={(e) =>
-                  setValues({ ...values, Precio: e.target.value })
-                }
-              />
-              {errors.Precio && (
-                <div className="invalid-feedback">{errors.Precio}</div>
-              )}
-            </div>
-            <div className="mb-3">
-              <label htmlFor="Stock">Stock:</label>
-              <input
-                type="number"
-                className={`form-control ${errors.Stock && "is-invalid"}`}
-                id="Stock"
-                placeholder="Stock"
-                value={values.Stock}
-                onChange={(e) =>
-                  setValues({ ...values, Stock: e.target.value })
-                }
-              />
-              {errors.Stock && (
-                <div className="invalid-feedback">{errors.Stock}</div>
-              )}
-            </div>
-            <div className="mb-3">
-              <label htmlFor="Activo">Activo:</label>
-              <select
-                className="form-control"
-                id="Activo"
-                value={values.Activo}
-                onChange={(e) =>
-                  setValues({ ...values, Activo: e.target.value })
-                }
+            {productList.map((product, index) => (
+              <div className="row" key={index}>
+                <div className="col">
+                  <label
+                    htmlFor={`Codigo-${index}`}
+                    className="form-label me-2"
+                  >
+                    Código:
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${
+                      errors[index].Codigo && "is-invalid"
+                    }`}
+                    id={`Codigo-${index}`}
+                    placeholder="Código"
+                    value={product.Codigo}
+                    style={{ width: "80px" }}
+                    onChange={(e) =>
+                      handleChange(index, "Codigo", e.target.value)
+                    }
+                  />
+                  {errors[index].Codigo && (
+                    <div className="invalid-feedback">
+                      {errors[index].Codigo}
+                    </div>
+                  )}
+                </div>
+                <div className="col">
+                  <label
+                    htmlFor={`Nombre-${index}`}
+                    className="form-label me-2"
+                  >
+                    Nombre:
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${
+                      errors[index].Nombre && "is-invalid"
+                    }`}
+                    id={`Nombre-${index}`}
+                    placeholder="Nombre"
+                    style={{ width: "500px" }}
+                    value={product.Nombre}
+                    onChange={(e) =>
+                      handleChange(index, "Nombre", e.target.value)
+                    }
+                  />
+                  {errors[index].Nombre && (
+                    <div className="invalid-feedback">
+                      {errors[index].Nombre}
+                    </div>
+                  )}
+                </div>
+                <div className="col">
+                  <label
+                    htmlFor={`Precio-${index}`}
+                    className="form-label me-2"
+                  >
+                    Precio:
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className={`form-control ${
+                      errors[index].Precio && "is-invalid"
+                    }`}
+                    id={`Precio-${index}`}
+                    placeholder="Precio"
+                    value={product.Precio}
+                    style={{ width: "80px" }}
+                    onChange={(e) =>
+                      handleChange(index, "Precio", e.target.value)
+                    }
+                  />
+                  {errors[index].Precio && (
+                    <div className="invalid-feedback">
+                      {errors[index].Precio}
+                    </div>
+                  )}
+                </div>
+                <div className="col">
+                  <label htmlFor={`Stock-${index}`} className="form-label me-2">
+                    Stock:
+                  </label>
+                  <input
+                    type="number"
+                    className={`form-control ${
+                      errors[index].Stock && "is-invalid"
+                    }`}
+                    id={`Stock-${index}`}
+                    placeholder="Stock"
+                    value={product.Stock}
+                    style={{ width: "80px" }}
+                    onChange={(e) =>
+                      handleChange(index, "Stock", e.target.value)
+                    }
+                  />
+                  {errors[index].Stock && (
+                    <div className="invalid-feedback">
+                      {errors[index].Stock}
+                    </div>
+                  )}
+                </div>
+                <div className="col">
+                  <label
+                    htmlFor={`Activo-${index}`}
+                    className="form-label me-2"
+                  >
+                    Activo:
+                  </label>
+                  <select
+                    className="form-select"
+                    id={`Activo-${index}`}
+                    value={product.Activo}
+                    style={{ width: "80px" }}
+                    onChange={(e) =>
+                      handleChange(index, "Activo", e.target.value)
+                    }
+                  >
+                    <option value="1">Sí</option>
+                    <option value="0">No</option>
+                  </select>
+                </div>
+                <div className="col d-flex align-items-end">
+                  <button
+                    type="button"
+                    className="btn btn-danger mt-auto"
+                    onClick={() => deleteRow(index)}
+                  >
+                    X
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Button variant="success" onClick={addRow} className="mt-3">
+                Agregar Más
+              </Button>
+              <button
+                type="button"
+                className="btn btn-primary mt-3"
+                onClick={handleSave}
               >
-                <option value="1">Sí</option>
-                <option value="0">No</option>
-              </select>
+                Guardar
+              </button>
             </div>
-            <button type="submit" className="btn btn-primary">
-              Guardar
-            </button>
           </form>
         </div>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cerrar
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 }

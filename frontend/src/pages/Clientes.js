@@ -65,7 +65,8 @@ function Clientes() {
           <div className="d-flex align-items-center justify-content-between mb-3">
             <div
               className="input-group rounded me-2"
-              style={{ maxWidth: "1000px" }}
+              style={{ maxWidth: "500px" }}
+             
             >
               <input
                 type="search"
@@ -74,6 +75,7 @@ function Clientes() {
                 aria-label="Search"
                 aria-describedby="search-addon"
                 onChange={handleSearch}
+                
               />
             </div>
             <Button variant="primary" onClick={handleShow}>

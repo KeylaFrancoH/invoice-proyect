@@ -53,7 +53,6 @@ function CrearCliente({ show, handleClose }) {
 
     setErrors(newErrors);
 
-
     return Object.values(newErrors).every((error) => error === "");
   };
 
@@ -61,13 +60,15 @@ function CrearCliente({ show, handleClose }) {
     e.preventDefault();
     const isValid = validateInputs();
     if (isValid) {
-      const confirmCreation = window.confirm("¿Está seguro de que desea continuar con la creación del usuario?");
+      const confirmCreation = window.confirm(
+        "¿Está seguro de que desea continuar con la creación del usuario?"
+      );
       if (confirmCreation) {
         axios
           .post("http://localhost:8081/clientes/create", values)
           .then((res) => {
             console.log(res);
-            handleClose(); 
+            handleClose();
             window.location.reload();
           })
           .catch((err) => {
@@ -78,12 +79,12 @@ function CrearCliente({ show, handleClose }) {
   };
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg">
+    <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>Crear Cliente</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div className="container mt-5">
+        <div className="container">
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label htmlFor="RucDni">Cédula o RUC:</label>
@@ -92,73 +93,81 @@ function CrearCliente({ show, handleClose }) {
                 className={`form-control ${errors.RucDni && "is-invalid"}`}
                 id="RucDni"
                 placeholder="Numero de cedula"
-                onChange={(e) => setValues({ ...values, RucDni: e.target.value })}
+                onChange={(e) =>
+                  setValues({ ...values, RucDni: e.target.value })
+                }
               />
               {errors.RucDni && (
                 <div className="invalid-feedback">{errors.RucDni}</div>
               )}
             </div>
-          <div className="mb-3">
-            <label htmlFor="Nombre">Nombre:</label>
-            <input
-              type="text"
-              className={`form-control ${errors.Nombre && "is-invalid"}`}
-              id="Nombre"
-              placeholder="Nombre "
-              onChange={(e) => setValues({ ...values, Nombre: e.target.value })}
-            />
-            {errors.Nombre && (
-              <div className="invalid-feedback">{errors.Nombre}</div>
-            )}
-          </div>
-          <div className="mb-3">
-            <label htmlFor="Correo">Correo:</label>
-            <input
-              type="email"
-              className={`form-control ${errors.Correo && "is-invalid"}`}
-              id="Correo"
-              placeholder="Email"
-              onChange={(e) => setValues({ ...values, Correo: e.target.value })}
-            />
-            {errors.Correo && (
-              <div className="invalid-feedback">{errors.Correo}</div>
-            )}
-          </div>
-          <div className="mb-3">
-            <label htmlFor="Direccion">Dirección:</label>
-            <input
-              type="text"
-              className={`form-control ${errors.Direccion && "is-invalid"}`}
-              id="Direccion"
-              placeholder="Dirección"
-              onChange={(e) => setValues({ ...values, Direccion: e.target.value })}
-            />
-            {errors.Direccion && (
-              <div className="invalid-feedback">{errors.Direccion}</div>
-            )}
-          </div>
-          <div className="mb-3">
-            <label htmlFor="Activo">Activo:</label>
-            <select
-              className="form-control"
-              id="Activo"
-              onChange={(e) => setValues({ ...values, Activo: e.target.value })}
-            >
-              <option value="1">Sí</option>
-              <option value="0">No</option>
-            </select>
-          </div>
-          <button type="submit" className="btn btn-primary">
+            <div className="mb-3">
+              <label htmlFor="Nombre">Nombre:</label>
+              <input
+                type="text"
+                className={`form-control ${errors.Nombre && "is-invalid"}`}
+                id="Nombre"
+                placeholder="Nombre "
+                onChange={(e) =>
+                  setValues({ ...values, Nombre: e.target.value })
+                }
+              />
+              {errors.Nombre && (
+                <div className="invalid-feedback">{errors.Nombre}</div>
+              )}
+            </div>
+            <div className="mb-3">
+              <label htmlFor="Correo">Correo:</label>
+              <input
+                type="email"
+                className={`form-control ${errors.Correo && "is-invalid"}`}
+                id="Correo"
+                placeholder="Email"
+                onChange={(e) =>
+                  setValues({ ...values, Correo: e.target.value })
+                }
+              />
+              {errors.Correo && (
+                <div className="invalid-feedback">{errors.Correo}</div>
+              )}
+            </div>
+            <div className="mb-3">
+              <label htmlFor="Direccion">Dirección:</label>
+              <input
+                type="text"
+                className={`form-control ${errors.Direccion && "is-invalid"}`}
+                id="Direccion"
+                placeholder="Dirección"
+                onChange={(e) =>
+                  setValues({ ...values, Direccion: e.target.value })
+                }
+              />
+              {errors.Direccion && (
+                <div className="invalid-feedback">{errors.Direccion}</div>
+              )}
+            </div>
+            <div className="mb-3">
+              <label htmlFor="Activo">Activo:</label>
+              <select
+                className="form-select me-2"
+                aria-label="Default select example"
+                id="Activo"
+                onChange={(e) =>
+                  setValues({ ...values, Activo: e.target.value })
+                }
+                style={{ width: "100px" }}
+              >
+                <option selected>¿Activo? </option>
+                <option value="1">Sí</option>
+                <option value="0">No</option>
+              </select>
+            </div>
+            <button type="submit" className="btn btn-primary">
               Guardar
             </button>
           </form>
         </div>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cerrar
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 }
