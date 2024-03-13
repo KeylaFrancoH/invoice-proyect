@@ -28,12 +28,11 @@ function ActualizarClienteModal({ clientId, handleClose, show }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setValues((prevValues) => ({
-      ...prevValues,
-      [name]: value,
-    }));
+    setValues({
+      ...values,
+      [name]: value
+    });
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const confirmUpdate = window.confirm("¿Seguro que desea continuar?");
@@ -105,18 +104,19 @@ function ActualizarClienteModal({ clientId, handleClose, show }) {
               />
             </div>
             <div className="mb-3">
-              <label htmlFor="Activo">Activo:</label>
-              <select
-                className="form-control"
-                id="Activo"
-                name="Activo"
-                value={values.Activo}
-                onChange={handleChange}
-              >
-                <option value="1">Sí</option>
-                <option value="0">No</option>
-              </select>
-            </div>
+            <label htmlFor="Activo">Activo:</label>
+            <select
+              className="form-control"
+              id="Activo"
+              onChange={(e) => setValues({ ...values, Activo: e.target.value })}
+              name="Activo"
+              value={values.Activo ? "1" : "0"}
+             
+            >
+              <option value="1">Sí</option>
+              <option value="0">No</option>
+            </select>
+          </div>
             <Button variant="primary" type="submit">
               Guardar
             </Button>

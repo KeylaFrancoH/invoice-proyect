@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import axios from 'axios';
+import axios from "axios";
 import { Button, Modal } from "react-bootstrap";
-import { Link } from 'react-router-dom';
-import CrearProducto from './product/CrearProducto';
-import ActualizarProduct from './product/ActualizarProduct';
+import { Link } from "react-router-dom";
+import CrearProducto from "./product/CrearProducto";
+import ActualizarProduct from "./product/ActualizarProduct";
 
 function Producto() {
   const [productos, setProductos] = useState([]);
@@ -24,7 +24,8 @@ function Producto() {
   };
 
   useEffect(() => {
-    axios.get('http://localhost:8081/productos')
+    axios
+      .get("http://localhost:8081/productos")
       .then((res) => {
         setProductos(res.data);
       })
@@ -37,36 +38,45 @@ function Producto() {
     setSearchTerm(e.target.value);
   };
 
-  const filteredProductos = productos.filter((producto) =>
-    producto.Nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    producto.Codigo.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProductos = productos.filter(
+    (producto) =>
+      producto.Nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      producto.Codigo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleDelete = (id) => {
-    const confirmDelete = window.confirm("¿Está seguro de que desea eliminar este producto?");
-  
+    const confirmDelete = window.confirm(
+      "¿Está seguro de que desea eliminar este producto?"
+    );
+
     if (confirmDelete) {
-      axios.delete(`http://localhost:8081/productos/${id}`)
-        .then(res => window.location.reload())
-        .catch(err => {
+      axios
+        .delete(`http://localhost:8081/productos/${id}`)
+        .then((res) => window.location.reload())
+        .catch((err) => {
           if (err.response && err.response.status === 500) {
-            alert("No se puede eliminar este producto porque está asociado a una factura.");
+            alert(
+              "No se puede eliminar este producto porque está asociado a una factura."
+            );
           } else {
             console.log(err);
           }
-        })
+        });
     }
   };
-  
+
   return (
-    <div className='productos'>
-      <div className='d-flex justify-content-center py-2 shadow-sm fs-2 fw-bold'>
+    <div className="productos">
+      <div className="d-flex justify-content-center py-2 shadow-sm fs-2 fw-bold">
         PRODUCTOS
       </div>
-      <div className='container mt-5'>
+      <div className="container mt-5">
         <div className="table-responsive">
           <div className="d-flex align-items-center justify-content-between mb-3">
-            <div className="input-group rounded me-2" style={{ maxWidth: "500px" }}>
+            <div
+              className="input-group rounded me-2"
+              style={{ maxWidth: "500px" }}
+            >
               <input
                 type="search"
                 className="form-control rounded"
@@ -81,7 +91,11 @@ function Producto() {
             </Button>
           </div>
           <CrearProducto show={showCrearModal} handleClose={handleCloseCrear} />
-          <ActualizarProduct show={showActualizarModal} handleClose={handleCloseActualizar} productId={selectedProductId} />
+          <ActualizarProduct
+            show={showActualizarModal}
+            handleClose={handleCloseActualizar}
+            productId={selectedProductId}
+          />
           {productos.length !== 0 ? (
             <table className="table table-striped table-bordered rounded">
               <thead className="table-dark">
@@ -107,10 +121,21 @@ function Producto() {
                     <td>{producto.Activo ? "Activo" : "Inactivo"}</td>
                     <td>{producto.FechaCreacion}</td>
                     <td>
-                      <Button variant="info" size="sm" className="me-2" onClick={() => handleShowActualizar(producto.idProducto)}>
+                      <Button
+                        variant="info"
+                        size="sm"
+                        className="me-2"
+                        onClick={() =>
+                          handleShowActualizar(producto.idProducto)
+                        }
+                      >
                         Modificar
                       </Button>
-                      <Button variant="danger" size="sm" onClick={() => handleDelete(producto.idProducto)}>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(producto.idProducto)}
+                      >
                         X
                       </Button>
                     </td>
@@ -125,9 +150,8 @@ function Producto() {
           )}
         </div>
       </div>
-
     </div>
-  )
+  );
 }
 
 export default Producto;
